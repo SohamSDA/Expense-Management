@@ -1,14 +1,26 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import Header from "../components/Header";
+import Header from "@/components/Header";
+import { Inter } from "next/font/google";
+import { dark } from "@clerk/themes";
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata = {
+  title: "Expense Tracker",
+  description: "Track your expenses effortlessly",
+};
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+      }}
+    >
       <html lang="en">
-        <body className="bg-gray-50">
+        <body className={`${inter.className} `}>
           <Header />
-          <main className="container mx-auto p-4">{children}</main>
+          <main>{children}</main>
         </body>
       </html>
     </ClerkProvider>

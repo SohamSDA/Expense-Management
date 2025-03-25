@@ -2,12 +2,24 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import supabase from "@/lib/supabase";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
 
 export default function Dashboard() {
   const { user, isSignedIn } = useUser();
@@ -15,11 +27,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const supabase = createClientComponentClient(); // ✅ Correct client setup for App Router
+
   useEffect(() => {
-    if (!isSignedIn) {
-      router.push("/sign-up");
-      return;
-    }
+    if (!isSignedIn || !user?.id) return;
 
     const fetchExpenses = async () => {
       setLoading(true);
@@ -27,23 +38,32 @@ export default function Dashboard() {
         .from("expenses")
         .select("*")
         .eq("user_id", user.id)
-        .order("date", { ascending: false });
+        .order("created_at", { ascending: false }); // ✅ Use created_at unless you made a date field
 
-      if (!error) setExpenses(data);
+      if (error) {
+        console.error("Failed to fetch expenses:", error.message);
+      } else {
+        setExpenses(data);
+      }
+
       setLoading(false);
     };
 
     fetchExpenses();
-  }, [isSignedIn, user]);
+  }, [isSignedIn, user, supabase]);
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">Your Expenses</CardTitle>
+          <CardTitle className="text-center text-2xl font-bold">
+            Your Expenses
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex justify-between">
-          <Button onClick={() => router.push("/dashboard/add-expense")}>+ Add Expense</Button>
+          <Button onClick={() => router.push("/dashboard/add-expense")}>
+            + Add Expense
+          </Button>
         </CardContent>
       </Card>
 
@@ -68,7 +88,9 @@ export default function Dashboard() {
                       <TableCell>{expense.category}</TableCell>
                       <TableCell>{expense.description}</TableCell>
                       <TableCell>${expense.amount}</TableCell>
-                      <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {new Date(expense.created_at).toLocaleDateString()}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (

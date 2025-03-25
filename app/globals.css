@@ -155,3 +155,10 @@
   height: 100%;
   background: radial-gradient(circle, transparent, rgba(0, 0, 0, 0.9));
 }
+
+
+@layer base {
+  button:hover {
+    cursor: pointer;
+  }
+}
