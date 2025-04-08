@@ -13,7 +13,14 @@ import {
   ArcElement,
 } from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend, ArcElement);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 // Create Supabase client
 const supabase = createClient(
@@ -27,6 +34,15 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Load expenses from Supabase
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+  
   const loadExpenses = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -44,10 +60,7 @@ export default function DashboardPage() {
 
   // Delete expense by id
   const handleDelete = async (id) => {
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("expenses").delete().eq("id", id);
     if (!error) await loadExpenses();
     else console.error("❌ Delete error:", error.message);
   };
@@ -57,9 +70,11 @@ export default function DashboardPage() {
   }, []);
 
   // 🔍 Search: filter expenses by title or category
-  const filteredExpenses = expenses.filter((exp) =>
-    exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (exp.category && exp.category.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredExpenses = expenses.filter(
+    (exp) =>
+      exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (exp.category &&
+        exp.category.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // 📊 Monthly Overview (Bar) Chart Data
@@ -71,8 +86,18 @@ export default function DashboardPage() {
 
   const barChartData = {
     labels: [
-      "Jan", "Feb", "Mar", "Apr", "May",
-      "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ],
     datasets: [
       {
@@ -100,8 +125,14 @@ export default function DashboardPage() {
         label: "Expenses by Category",
         data: pieData,
         backgroundColor: [
-          "#7c3aed", "#f472b6", "#60a5fa", "#facc15",
-          "#34d399", "#f87171", "#a78bfa", "#fbbf24"
+          "#7c3aed",
+          "#f472b6",
+          "#60a5fa",
+          "#facc15",
+          "#34d399",
+          "#f87171",
+          "#a78bfa",
+          "#fbbf24",
         ],
       },
     ],
@@ -131,7 +162,6 @@ export default function DashboardPage() {
 
       {/* Row with Pie Chart + Bar Chart side by side */}
       <div className="flex flex-col md:flex-row gap-6 mb-10">
-        
         {/* Category Breakdown (Pie) */}
         <div className="bg-gray-900 p-4 rounded-xl shadow-lg w-full md:w-1/2 h-80">
           <h2 className="text-xl font-semibold mb-2">Category Breakdown</h2>
@@ -144,10 +174,13 @@ export default function DashboardPage() {
         <div className="bg-gray-900 p-4 rounded-xl shadow-lg w-full md:w-1/2 h-80">
           <h2 className="text-xl font-semibold mb-2">Monthly Overview</h2>
           <div className="relative w-full h-64">
-            <Bar data={barChartData} options={{
-              ...chartOptions,
-              plugins: { legend: { display: false } },
-            }} />
+            <Bar
+              data={barChartData}
+              options={{
+                ...chartOptions,
+                plugins: { legend: { display: false } },
+              }}
+            />
           </div>
         </div>
       </div>
@@ -165,15 +198,22 @@ export default function DashboardPage() {
             >
               <div>
                 <h3 className="font-bold text-lg">{exp.title}</h3>
-                <p className="text-sm text-gray-400">{exp.category || "Uncategorized"}</p>
+                <p className="text-sm text-gray-400">
+                  {exp.category || "Uncategorized"}
+                </p>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-green-400 font-semibold text-lg">
-                  ${parseFloat(exp.amount).toFixed(2)}
-                </span>
+                <div className="text-right">
+                  <div className="text-green-400 font-semibold text-lg">
+                    ${parseFloat(exp.amount).toFixed(2)}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {formatDate(exp.created_at)}
+                  </div>
+                </div>
                 <button
                   onClick={() => handleDelete(exp.id)}
-                  className="text-red-500 hover:text-red-700 font-bold text-sm"
+                  className="text-white-500 bg-red-500 hover:bg-red-700  rounded-2xl px-4 py-2 font-bold text-sm"
                 >
                   Delete
                 </button>
